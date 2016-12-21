@@ -1,115 +1,80 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 
-abstract class Animal{
+class Node{
+	Node left;
+	Node right;
+	int data;
 	
-	private int order;
-	String name;
-	
-	Animal(String s){
-		this.name=s;
-	}
-	
-	public int getOrder(){
-		return this.order;
-	}
-	
-	void setOrder(int order){
-		this.order = order;
-	}
-	
-	boolean isOlderThan(Animal animal){
-		return this.order<animal.getOrder();
-	}
-	
-}
-
-class Cat extends Animal{
-	Cat(String s){
-		super(s);
+	Node (int data){
+		this.data=data;
 	}
 }
-
-class Dog extends Animal{
-	Dog(String s){
-		super(s);
-	}
-}
-
-class AnimalQueue{
-	
-	LinkedList<Cat> cats;
-	LinkedList<Dog> dogs;
-	int order=0; 
-	
-	AnimalQueue(){
-		cats=new LinkedList<Cat>();
-		dogs = new LinkedList<Dog>();
-	}
-	
-	void enqueue(Animal animal){
-		
-		animal.setOrder(order);
-		order++;
-		
-		if(animal instanceof Dog){
-			dogs.add((Dog)animal);
-		}
-		
-		if(animal instanceof Cat){
-			cats.add((Cat) animal);
-		}
-		
-	}
-	
-	
-	public Cat dequeueCats(){
-		return cats.remove();
-	}
-	
-	public Dog dequeueDogs(){
-		return dogs.remove();
-	}
-	public Animal dequeueAny(){
-		if(dogs.isEmpty()){
-			return dequeueCats();
-		}
-		
-		if(cats.isEmpty()){
-			return dequeueDogs();
-		}
-		
-		if(dogs.peek().isOlderThan(cats.peek())){
-			return dequeueDogs();
-		} else  {
-			return dequeueCats();
-		}
-	}
-}
-
 public class Solution {
+
+	
+	static ArrayList<LinkedList<Integer>> allArrays(Node root){
+		 ArrayList<LinkedList<Integer>> result = new ArrayList<LinkedList<Integer>>();
+		if(root==null){
+			
+			result.add(new LinkedList<Integer>());
+			return result;
+			
+		}
+		
+		LinkedList<Integer> prefixList = new LinkedList<Integer>();
+		prefixList.add(root.data);
+		
+		ArrayList<LinkedList<Integer>> leftLists = allArrays(root.left);
+		ArrayList<LinkedList<Integer>> rightLists = allArrays(root.right);
+		
+		for(LinkedList<Integer> leftList : leftLists){
+			for(LinkedList<Integer> rightList: rightLists){
+				
+				weaveLists(leftList,rightList,result,prefixList);
+			}
+		}
+		
+		return result;
+	}
+	
+	static void weaveLists(LinkedList<Integer> leftList,LinkedList<Integer> rightList,ArrayList<LinkedList<Integer>> results,LinkedList<Integer> prefixList ){
+		
+		if(leftList.size()==0 || rightList.size()==0){
+			LinkedList<Integer> result = (LinkedList<Integer>)prefixList.clone();
+			result.addAll(leftList);
+			result.addAll(rightList);
+			results.add(result);
+			return ;
+
+		}
+		
+		prefixList.addLast(leftList.removeFirst());
+		weaveLists(leftList,rightList,results,prefixList);
+		leftList.addFirst(prefixList.removeLast());
+		
+		prefixList.addLast(rightList.removeFirst());
+		weaveLists(leftList,rightList,results,prefixList);
+		rightList.addFirst(prefixList.removeLast());
+		
+		
+	}
 	
 	public static void main(String args[]){
-	
-	AnimalQueue aq= new AnimalQueue();
-	Dog dog1 = new Dog("hacker");
-	Dog dog2 = new Dog("duffy");
-	
-	Cat cat1= new Cat("Katy");
-	Cat cat2= new Cat("Kitty");
-
-		aq.enqueue(dog1);
-		aq.enqueue(dog2);
-		aq.enqueue(cat1);
-		aq.enqueue(cat2);
 		
-		System.out.println(aq.dequeueAny().name);
-	
-		System.out.println(aq.dequeueCats().name);
-		System.out.println(aq.dequeueDogs().name);
-	
+		Node root = new Node(2);
+		root.left= new Node (1);
+		root.right=new Node(3);
+		
+		 ArrayList<LinkedList<Integer>> result = allArrays( root);
+		 
+		 for(LinkedList<Integer> ll : result){
+			 for(int i=0;i<ll.size();i++){
+				 System.out.print(ll.get(i)+" ");
+			 }
+			 System.out.println();
+		 }
 	}
 	
-
+	
 }
-
-
